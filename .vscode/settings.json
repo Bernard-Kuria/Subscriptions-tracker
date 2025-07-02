@@ -1,0 +1,8 @@
+{
+  "mdb.presetConnections": [
+    {
+      "name": "Preset Connection",
+      "connectionString": "mongodb+srv://bernardikuria:386B386b@cluster0.rmbnpl1.mongodb.net/"
+    }
+  ]
+}

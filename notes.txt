@@ -1,0 +1,178 @@
+BACKEND
+Install nodemon - restart your server on any changes.
+	code: npm install --save-dev nodemon.
+
+Install Linter - allows to keep codebase clean so as to add code as we continue scaling APIs.
+	code: npx eslint--init
+		  npm init@eslint/config@latest
+
+Install dotenv - to retrieve our env variables
+	code: npm install dotenv
+
+Package.json notes:
+- name - name of project
+- type - helps you to configure your syntax.
+- "type": "module" - helps not to use the old require syntax, but rather the new ES6 import modules.
+- Scripts can be changed such as the start script which can run "node app.js" or the dev script which can run the "nodemon app.js".
+
+Linter helps keep the code base clean as we continue scaling the API. Most popular -> ESLint.
+
+To start creating an express server;
+1. import express
+2. initialize your app with express.
+3. Use the app instance and then call the method of the http call.
+4. To be able to access the API you need to ensure the server listens for requests trying to access specific routes (e.g. app.listen(3000, () => {})).
+5. Finish with export default app;
+
+Setting up environments so as to run the application both locally and in production.
+
+1. Install dotenv -> package that will help retieve our environments.
+2. Create a config folder then a file called env.js
+3. In env.js we import config from dotenv.
+4. Set up config then give it a path pointing toward the dotenv file to extract all the environment variables.
+5. Export the extracted variables from this file to the port.
+
+NOTE: You can have multiple env files to pull from by using a template string. E.g. config({`.env.${process.env.NODE_ENV || 'development'}.local`});
+
+Using the environment variables.
+E.g. config({`.env.${process.env.NODE_ENV || 'development'}.local`});
+
+export const {PORT, NODE_ENV} = process.env;
+
+1. In file .env.production.local, we use a variable called NODE_ENV='production'.
+2. In file .env.development.local, we only call PORT=5000 and NODE_ENV='development';
+3. In app.js do;
+	import { PORT } from './config/env.js';
+
+NOTE: Remember to remove the .env and .env.*.local to the deployment by adding the files to the gitignore.
+
+Endpoints/Routes - enable frontend apps to allow clients to get the desired data by hitting those endpoints.
+
+1. Create folder called 'routes' to separate routes based on their functionality.
+2. Create auth.routes.js (first router).
+- In auth.routes.js import Router from 'express'. then initialize it using a variable called authRouter.
+- Use the authRouter instance and then call the method of the http call. E.g. post with path and callback function. If it's post, in the callback, we pass in a JSON format.
+- You can use the dynamic or static parameter depending on your functionality. Static par e.g. get('/users'), dynamic par e.g. get('/:id').
+3. Remember to conclude with an export default authRouter.
+
+URL naming conventions best practices:
+1. Use nouns to represent resources/Not Verbs
+2. Use Pluralized Nouns for resources
+3. Use hyphens (-) to improve the readability of URLs
+4. Use forward slashes (/) for hierarchy but not trailing forward slash (/)
+5. Avoid using file extensions
+6. Version your APIs
+
+To use the routers in the programs, we need to import them to the app.js and use them.
+1. We'll do; import authRouter from './routes/auth.routes.js';
+2. We use the use() keyword followed by a the routes (typically we follow with middleware but we can also use them with routes) so as to say which routes we want to use. 
+E.g. app.use('/api/v1/auth', authRouter);
+
+How to use MongoDB database
+1. Create an account in MongoDB
+2. Create a new project
+3. Create a database cluster
+4. Connect to a monngoDB for VScode
+5. replace <db_password> with the password for your username
+
+* Add new env variables for database in your env files.
+
+E.g. DB_URI= "mongodb+srv://bernardikuria:386B386b@cluster0.rmbnpl1.mongodb.net/"
+
+How to use the Mongodb in your backend
+1. Create a database folder.
+2. Create a file mongodb.js.
+3. import mongoose
+4. import env variables
+5. check if DB_URI is available and throw error if not.
+6. connect to db with try and catch async function. You can call it connectToDatabse.
+7. Export the file.
+8. in your app.js:
+	1. Import the database
+	2. connect to the database. e.g. await connectToDatabse(); in the app.listen.
+
+Creating Models
+models - help us to know how our data is going to look like
+1. Create modules folder.
+2. Create multiple module files in modules.
+3. In a module file:
+	1. Import mongoose.
+	2. initialize a variable for a mongoose Schema.
+	3. In the variable you can pass an object that alows you to define how a specific module will look like.
+	4. Initialize a variable for the mongoose mode. E.g. const User = mongoose.model('User', userSchema);
+	5. then export default User
+
+Error handling
+1. Create a new folder for the errors middleware. E.g. errors
+2. Create a new file in the folder. You can call it error.middleware.js
+3. Define an errorMiddleware function:
+	1. Make it pass the; err, req, res & next.
+	2. Open a try and catch block. The try -> decipher what the error exactly is.
+	3. Inside the try, we define an error variable and set it to { ... err } which was passed into the function before.
+	4. in this error object, we set error.message = err.message.
+	5. console the err to see the error.
+4. Inside the try block we start to detect what type of error we have:
+	1. For bad ObjectId, we can check if the err.code === 'CastError'. Then we define the message as 'Resource not found'. Then we create a new error and pass the message to it. Finally we set the error.statusCode to 404.
+
+	2. For duplicate key, we can check if the err.code === 11000. We then define the message as 'Duplicate field value entered'. Then create a new error  and pass the message. Finally we set the status code to 400.
+
+	3. We check the validation error. The message could be for many validation errors so we grab the err.errors values and map each as we set each error to the val.message error. E.g. const message = Object.values(err.errors).map(val => val.message); Then create the new Error and pass the message.join(', ); and set statusCode = 400;
+
+	4. Do this incase of more error types.
+
+5. Finally in the try block, we do this: res.status(error.statusCode || 500).json({success: false, error: error.message || 'Server Error'});
+
+6. In the catch block, we simply define next and pass the error.
+
+7. FInally in the error file, we export default errorMiddleware.
+
+8 In the app.js we import the error file by then use it: app.use(errorMiddleware).
+
+* We should also define other middlewares to ensure our code is running smoothly. Some of them are:
+	express.json() -> handle json data.
+	express.urlencoded({extended: false}) -> process the form data sent via the http forms in a simple format.
+	cookieParser() -> we actuallly have to import it at the top first: import cookieParser from 'cookie-parser'; It reads cookies from the incoming requests so your app can store user data.
+
+Setting up JWT Auth
+1. npm install jsonwebtoken bcryptjs
+2. In the .env.development.local (or any environment on your project) we define some variables:
+	# JWT Auth
+	JWT_SECRET="secret"
+	JWT_EXPIRES_IN="1d"
+3. In the env.js we also need to export those variables from the .env.development.local
+
+Creating a controller
+1. Create a new folder called controllers
+2. Within controllers, create a file called auth.controller.js
+3. Within auth.controller.js create a new function called signUp, signOut and signIn:
+	1. In each, we pass in the req, res and next.
+	2. Then in the file we export each function.
+4. In the routes.js files, e.g. auth.routes.js, we import the respective controllers: import {signUp, signIn, signOut} from '.../controllers/auth.controller.js';
+5. In the routes file as well, we set the respective controllers to their respective http requests. E.g. authRouter.post('/sign-up', signUp);
+6. Back in the auth.controller.js:
+	1. we import mongoose and create a new sessionin the function blocks we defined earlier on. We do this by: const session = await mongoose.startSession();
+	2. Then we do session.startTransaction();
+	3. Then we open a try and catch block:
+		1. In the catch block, if at any point something goes wrong, we await session.abortTransaction(); session.endSession();next(error);
+		2. In the try block, we create a new user:
+		- we get the data we need from the req.body -> req.body is an object containing data fromthe client (POST request). So, we declare the variables/data by destructuring them from the req.body.
+		- Check if a user already exists. const existingUser = await User.findOne({email});
+		if(existingUser) {
+			const error = new Error('User already exists');
+			error.statusCode = 409;
+			throw error;
+		}
+		- Hash password. Means we store the data not as plain text. We use sth we call a salt and make sure to import bcrypt from 'bcrypt.js';. We do:
+			const salt = await bcrypt.genSalt(10);
+			const hashedPassword = await bcrypt.hash(password, salt);
+			const newUser = awaait user.create([{name, email,password: hashedPassword}], {session});
+			const token = jwt.sign({userId: newUsers[0]._id}, JWT_SECRET, {expiresIn: JWT_EXPIRES_IN}); // make sure to import jwt from 'jsonwebtoken';
+			res.status(201).json({
+				success: true,
+				message: 'User created successfully',
+				data: {
+					token,
+					user: newUsers[0],
+				}
+			})
+7. We do the same for the signIn and signOut for their respective functionalities.
