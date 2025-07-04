@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const subscriptionSchema = new mongoose.Schema(
   {
-    nname: {
+    name: {
       type: String,
       required: [true, "Subscription name is required"],
       trim: true,
@@ -26,7 +26,7 @@ const subscriptionSchema = new mongoose.Schema(
     category: {
       type: String,
       enum: [
-        "sprts",
+        "sports",
         "news",
         "entertainment",
         "lifestyle",
@@ -58,10 +58,10 @@ const subscriptionSchema = new mongoose.Schema(
     renewalDate: {
       type: Date,
       validate: {
-        validator: (value) => {
+        validator: function (value) {
           return value > this.startDate;
         },
-        message: "Renewal date must be after the start past",
+        message: "Renewal date must be after the start date",
       },
     },
     user: {
@@ -71,7 +71,7 @@ const subscriptionSchema = new mongoose.Schema(
       index: true,
     },
   },
-  { Timestamp: true }
+  { timestamps: true }
 );
 
 // Auto-calculate renewal date if missing.
@@ -86,7 +86,6 @@ subscriptionSchema.pre("save", function (next) {
 
     this.renewalDate = new Date(this.startDate);
     this.renewalDate.setDate(
-      this,
       this.renewalDate.getDate() + renewalPeriods[this.frequency]
     );
   }
@@ -98,3 +97,7 @@ subscriptionSchema.pre("save", function (next) {
 
   next();
 });
+
+const Subscription = mongoose.model("Subscription", subscriptionSchema);
+
+export default Subscription;
