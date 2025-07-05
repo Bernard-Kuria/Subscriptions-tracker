@@ -46,7 +46,7 @@ export const signUp = async (req, res, next) => {
 
     res.status(201).json({
       success: true,
-      message: "User created succeessfully",
+      message: "User created successfully",
       data: {
         token,
         user: newUsers[0],
@@ -58,6 +58,7 @@ export const signUp = async (req, res, next) => {
     next(error);
   }
 };
+
 export const signIn = async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -65,7 +66,7 @@ export const signIn = async (req, res, next) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-      const error = await Error("User not found");
+      const error = new Error("User not found");
       error.statusCode = 404;
       throw error;
     }
@@ -73,7 +74,7 @@ export const signIn = async (req, res, next) => {
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
-      const error = await Error("Invalid password");
+      const error = new Error("Invalid password");
       error.statusCode = 401;
       throw error;
     }
@@ -94,4 +95,14 @@ export const signIn = async (req, res, next) => {
     next(error);
   }
 };
-export const signOut = async (req, res, next) => {};
+
+export const signOut = async (req, res, next) => {
+  try {
+    res.status(200).json({
+      success: true,
+      message: "User signed out successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
